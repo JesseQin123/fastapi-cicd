@@ -26,7 +26,7 @@ jobs:
 
       - name: Replace image tag in deployment.yaml
         run: |
-          sed -i "s|image: jesseqin/my-fastapi-app:.*|image: jesseqin/my-fastapi-app:${{ env.TAG }}|" practice/fastapi-cicd/kubernetes/deployment.yaml
+          sed -i "s|image: jesseqin/my-fastapi-app:.*|image: jesseqin/my-fastapi-app:${{ env.TAG }}|" /kubernetes/deployment.yaml
 
       - name: Commit updated deployment.yaml
         run: |
