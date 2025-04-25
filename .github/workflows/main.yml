@@ -8,30 +8,19 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
-
-      - name: Set image tag to short SHA
-        run: echo "TAG=$(echo $GITHUB_SHA | cut -c1-7)" >> $GITHUB_ENV
-
+        
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+        
       - name: Login to DockerHub
-        run: echo "${{ secrets.DOCKERHUB_TOKEN }}" | docker login -u "${{ secrets.DOCKERHUB_USERNAME }}" --password-stdin
-
+        run: echo ${{ secrets.DOCKERHUB_TOKEN }} | docker login -u ${{ secrets.DOCKERHUB_USERNAME }} --password-stdin
+          
       - name: Build Docker image
-        run: docker build -t jesseqin/my-fastapi-app:${{ env.TAG }} .
+        run: docker build -t jesseqin/my-fastapi-app:latest .
 
-      - name: Push Docker image
-        run: docker push jesseqin/my-fastapi-app:${{ env.TAG }}
-
-      - name: Replace image tag in deployment.yaml
-        run: |
-          sed -i "s|image: jesseqin/my-fastapi-app:.*|image: jesseqin/my-fastapi-app:${{ env.TAG }}|" kubernetes/deployment.yaml
-
-      - name: Commit updated deployment.yaml
-        run: |
-          git config user.name "github-actions"
-          git config user.email "github-actions@github.com"
-          git add kubernetes/deployment.yaml
-          git commit -m "chore: update deployment tag to ${{ env.TAG }}"
-          git push
+      - name: Push Docker image to DockerHub
+        run: docker push jesseqin/my-fastapi-app:latest

@@ -4,6 +4,9 @@ metadata:
   name: fastapi-deployment
   labels:
     app: fastapi-app
+  annotations:
+    argocd-image-updater.argoproj.io/image-list: jesseqin/my-fastapi-app
+    argocd-image-updater.argoproj.io/jesseqin_my-fastapi-app.update-strategy: latest
 spec:
   replicas: 2
   selector:
