@@ -15,6 +15,9 @@ jobs:
       - name: Set image tag to short SHA
         run: echo "TAG=$(echo $GITHUB_SHA | cut -c1-7)" >> $GITHUB_ENV
 
+      - name: Login to DockerHub
+        run: echo "${{ secrets.DOCKERHUB_TOKEN }}" | docker login -u "${{ secrets.DOCKERHUB_USERNAME }}" --password-stdin
+
       - name: Build Docker image
         run: docker build -t jesseqin/my-fastapi-app:${{ env.TAG }} .
 
