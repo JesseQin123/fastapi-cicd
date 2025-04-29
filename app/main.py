@@ -5,6 +5,17 @@ import os
 from pydantic import BaseModel
 import base64
 from typing import List
+from dotenv import load_dotenv
+from pathlib import Path
+import requests
+
+# Get the project root directory
+project_root = Path(__file__).parent.parent
+env_path = project_root / '.env'
+
+# Load environment variables from .env file
+print("Loading .env from:", env_path)
+load_dotenv(env_path)
 
 app = FastAPI()
 
@@ -22,11 +33,13 @@ async def read_root():
 async def generate_image(request: ImageRequest):
     try:
         # Check if API token is set
-        if not os.getenv("REPLICATE_API_TOKEN"):
+        api_token = os.getenv("REPLICATE_API_TOKEN")
+        print("Debug - api_token=", api_token)
+        if not api_token:
             raise HTTPException(status_code=500, detail="REPLICATE_API_TOKEN not set")
 
         # Initialize Replicate client
-        client = replicate.Client(api_token=os.getenv("REPLICATE_API_TOKEN"))
+        client = replicate.Client(api_token=api_token)
 
         # Run the model
         output = client.run(
@@ -34,16 +47,23 @@ async def generate_image(request: ImageRequest):
             input={"prompt": request.prompt}
         )
 
+        print("Debug - Replicate output type:", type(output))
+        print("Debug - Replicate output:", output)
+
         # Convert images to base64
         base64_images = []
-        for image in output:
-            # Since the output is already bytes, we can encode it directly
-            base64_str = base64.b64encode(image).decode('utf-8')
-            base64_images.append(f"data:image/webp;base64,{base64_str}")
+        for url in output:
+            # Download image from URL
+            response = requests.get(url)
+            response.raise_for_status()
+            # Convert to base64
+            base64_str = base64.b64encode(response.content).decode('utf-8')
+            base64_images.append(base64_str)
 
         return ImageResponse(images=base64_images)
 
     except Exception as e:
+        print("Debug - Error:", str(e))
         raise HTTPException(status_code=500, detail=str(e))
 
 if __name__ == "__main__":

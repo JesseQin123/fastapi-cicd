@@ -14,3 +14,4 @@ typing_extensions==4.13.2
 uvicorn==0.34.2
 replicate==0.22.0
 python-dotenv==1.0.1
+requests==2.32.3
